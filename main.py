@@ -1,92 +1,6 @@
 import pygame
 from random import randint
-
-
-class Turret(pygame.sprite.Sprite):
-    def __init__(self, path, x, y, flip, velocity): #, cage_count, cd_time
-        pygame.sprite.Sprite.__init__(self)
-
-        self.image = pygame.image.load(path)
-        self.image = pygame.transform.flip(self.image, flip, False)
-        self.image = pygame.transform.scale(self.image, (200, 200))
-
-        self.position_x = x
-        self.position_y = y
-
-        self.velocity = velocity
-
-        self.rect = self.image.get_rect(center=(x, y))
-
-        # self.cage_count = cage_count
-        # self.cage_count_const = cage_count
-        # self.cd_time = cd_time
-        #
-        # self.key = pygame.key.get_pressed()
-
-    def move(self, up, down):
-        key = pygame.key.get_pressed()
-        if key[up]:
-            self.position_y -= self.velocity
-        if key[down]:
-            self.position_y += self.velocity
-
-        self.rect.center = [self.position_x, self.position_y]
-
-    # def reload(self, reload_key):
-    #     key = pygame.key.get_pressed()
-    #     if self.cage_count <= 0 or key[reload_key]:
-    #         self.cd_time -= 1
-    #         if self.cd_time <= 0:
-    #             self.cage_count = self.cage_count_const
-
-
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, path, x, y, speed):
-        pygame.sprite.Sprite.__init__(self)
-
-        self.image = pygame.image.load(path)
-        self.image = pygame.transform.scale(self.image, (30, 30))
-
-        self.position_x = x
-        self.position_y = y
-
-        self.speed = speed
-
-        self.rect = self.image.get_rect(center=(x, y))
-
-    def update(self):
-        self.rect.x += self.speed
-
-
-class Robot(pygame.sprite.Sprite):
-    def __init__(self, path, x, y, speed):
-        pygame.sprite.Sprite.__init__(self)
-
-        self.image = pygame.image.load(path)
-        self.image = pygame.transform.scale(self.image, (100, 100))
-
-        self.position_x = x
-        self.position_y = y
-
-        self.rect = self.image.get_rect(center=(x, y))
-
-        self.speed = speed
-
-    def update(self):
-        self.rect.x -= self.speed
-
-
-class RedLine(pygame.sprite.Sprite):
-    def __init__(self, path, x, y):
-        pygame.sprite.Sprite.__init__(self)
-
-        self.image = pygame.image.load(path)
-        self.image = pygame.transform.scale(self.image, (5, screen_height))
-
-        self.position_x = x
-        self.position_y = y
-
-        self.rect = self.image.get_rect(topleft=(x, y))
+from newItem import Item, movingItem, controlItem
 
 
 pygame.init()
@@ -110,14 +24,32 @@ font = pygame.font.Font(None, 36)
 
 current_time = 0
 robot_group = pygame.sprite.Group()
-robot1 = Robot('img/robot_11.png', screen_width, screen_height/3, 5)
+robot1 = movingItem(
+    path='img/robot_11.png',
+    x=screen_width, y=screen_height/3,
+    width=100, height=100,
+    speed=5, to_Left=True
+)
 robot1_time = 105
-robot2 = Robot('img/robot_2.png', x=screen_width, y=screen_height/2, speed=5)
+robot2 = movingItem(
+    path='img/robot_2.png',
+    x=screen_width, y=screen_height/2,
+    width=100, height=100,
+    speed=5, to_Left=True
+)
 robot2_time = 125
 
-gun = Turret(path='img/gun1.png', x=100, y=screen_height/2, flip=True, velocity=8) # , cage_count=30, cd_time=4
+gun = controlItem(
+    pash='img/gun1.png',
+    x=100, y=screen_height/2,
+    width=200, height=200,
+    flip=True, velocity=8) # , cage_count=30, cd_time=4
 
-red_line = RedLine('img/1.png', screen_width/5, 0)
+red_line = Item(
+    path='img/1.png',
+    x=screen_width/5, y=0,
+    width=5, height=screen_height
+)
 
 bullet_group = pygame.sprite.Group()
 
@@ -153,7 +85,12 @@ while run:
             if key[pygame.K_SPACE] and reloading == False:
                 x = gun.rect.x + 110
                 y = gun.rect.y + 35
-                bullet_group.add(Bullet('img/bomb.png', x, y, speed=50))
+                bullet_group.add(movingItem(
+                    path='img/bomb.png',
+                    x=x, y=y,
+                    width=30, height=30,
+                    speed=50, to_Right=True
+                ))
                 cage_count -= 1
                 if cage_count <= 0:
                     reloading = True
@@ -173,10 +110,24 @@ while run:
     screen.blit(cage_count_text, (60, 140))
 
     if current_time >= robot1_time:
-        robot_group.add(Robot('img/robot_11.png', screen_width, randint(20, screen_height - 30), 2))
+        robot_group.add(
+            movingItem(
+                path='img/robot_11.png',
+                x=screen_width, y=randint(20, screen_height - 30),
+                width=100, height=100,
+                speed=5, to_Left=True
+            )
+        )
         robot1_time += 105
     if current_time >= robot2_time:
-        robot_group.add(Robot('img/robot_2.png', x=screen_width, y=randint(20, screen_height - 30), speed=2))
+        robot_group.add(
+            movingItem(
+                path='img/robot_2.png',
+                x=screen_width, y=randint(20, screen_height - 30),
+                width=100, height=100,
+                speed=5, to_Left=True
+            )
+        )
         robot2_time += 125
 
     gun.move(pygame.K_w, pygame.K_s)
