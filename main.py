@@ -1,6 +1,7 @@
 import pygame
 from random import randint
 from newItem import Item, movingItem, controlItem
+from work_with_json import inJson
 
 
 pygame.init()
@@ -172,6 +173,10 @@ while run:
         life -= 1
         screen.blit(life_text, (60, 100))
         if life <= 0:
+            from datetime import datetime
+            now = datetime.now()
+            key = f'{now.year}_{now.month}_{now.day}={now.hour}_{now.minute}_{now.second}'
+            result = inJson('results.json').new_value(key, score)
             run = False
 
     robot_collide = pygame.sprite.groupcollide(bullet_group, robot_group, True, True)
