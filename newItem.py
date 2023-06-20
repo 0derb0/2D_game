@@ -15,24 +15,38 @@ class Item(pygame.sprite.Sprite):
 
 
 class movingItem(Item):
-    def __init__(
-            self, path,
-            x, y,
-            width, height,
-            speed,
-            to_Right=False, to_Left=False
-    ):
+    def __init__(self, path, x, y, width, height, speed):
         Item.__init__(self, path, x, y, width, height)
         self.speed = speed
         self.rect = self.image.get_rect(center=(x, y))
-        self.to_Right = to_Right
-        self.to_Left = to_Left
 
     def update(self):
-        if self.to_Right:
-            self.rect.x += self.speed
-        if self.to_Left:
-            self.rect.x -= self.speed
+        self.rect.x += self.speed
+
+
+class animatedItem(movingItem):
+    def __init__(self, path, x, y, height, width, speed, anim):
+        movingItem.__init__(self, path, x, y, height, width, speed)
+        self.frame = 0
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 125
+        self.width = width
+        self.height = height
+
+        self.anim = anim
+
+    def update(self):
+        self.rect.x -= self.speed
+
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(self.anim):
+                self.frame = 0
+
+            self.image = self.anim[self.frame]
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
 
 class controlItem(Item):

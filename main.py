@@ -1,6 +1,6 @@
 import pygame
 from random import randint
-from newItem import Item, movingItem, controlItem
+from newItem import Item, movingItem, animatedItem, controlItem
 from work_with_json import inJson
 
 
@@ -105,7 +105,7 @@ while run:
                 path='img/bomb.png',
                 x=x, y=y,
                 width=30, height=30,
-                speed=50, to_Right=True
+                speed=50
             ))
             cage_count -= 1
             if cage_count <= 0:
@@ -128,21 +128,27 @@ while run:
     screen.blit(cage_count_text, (60, 140))
 
     # mob spawn
+    anim = [
+            pygame.image.load('img/mob/mob1-removebg-preview.png'),
+            pygame.image.load('img/mob/mob2-removebg-preview.png'),
+            pygame.image.load('img/mob/mob3-removebg-preview.png'),
+            pygame.image.load('img/mob/mob4-removebg-preview.png'),
+        ]
     if current_time >= robot1_time:
-        robot_group.add(movingItem(
-                path='img/robot_11.png',
+        robot_group.add(animatedItem(
+                path='img/mob/mob1-removebg-preview.png',
                 x=screen_width, y=randint(20, screen_height - 30), 
                 width=100, height=100,
-                speed=5, to_Left=True
+                speed=5, anim=anim
             ))
         robot1_time += 105
     if current_time >= robot2_time:
         robot_group.add(
-            movingItem(
-                path='img/robot_2.png',
+            animatedItem(
+                path='img/mob/mob1-removebg-preview.png',
                 x=screen_width, y=randint(20, screen_height - 30),
                 width=100, height=100,
-                speed=5, to_Left=True
+                speed=5, anim=anim
             )
         )
         robot2_time += 125
