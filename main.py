@@ -1,15 +1,6 @@
 import pygame
 from random import randint
 from newItem import Item, movingItem, controlItem
-# from tkinter import *
-#
-# root = Tk()
-#
-# monitor_height = root.winfo_screenheight()
-# monitor_width = root.winfo_screenwidth()
-#
-# print("width x height = %d x %d (pixels)" % (monitor_width, monitor_height))
-# mainloop()
 
 
 pygame.init()
@@ -76,6 +67,15 @@ red_group = pygame.sprite.GroupSingle(red_line)
 # create bullet group
 bullet_group = pygame.sprite.Group()
 
+mob_images = [
+    'img/mob/mob1-removebg-preview.png',
+    'img/mob/mob2-removebg-preview.png',
+    'img/mob/mob3-removebg-preview.png',
+    'img/mob/mob4-removebg-preview.png',
+]
+mob_image = 0
+mobs = []
+
 while run:
     key = pygame.key.get_pressed()
 
@@ -128,14 +128,12 @@ while run:
 
     # mob spawn
     if current_time >= robot1_time:
-        robot_group.add(
-            movingItem(
+        robot_group.add(movingItem(
                 path='img/robot_11.png',
-                x=screen_width, y=randint(20, screen_height - 30),
+                x=screen_width, y=randint(20, screen_height - 30), 
                 width=100, height=100,
                 speed=5, to_Left=True
-            )
-        )
+            ))
         robot1_time += 105
     if current_time >= robot2_time:
         robot_group.add(
