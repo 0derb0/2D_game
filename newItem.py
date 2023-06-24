@@ -46,7 +46,7 @@ class animatedItem(movingItem):
                 self.frame = 0
 
             self.image = self.anim[self.frame]
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            # self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
 
 class controlItem(Item):

@@ -23,12 +23,15 @@ screen_size = pygame.display.get_window_size()
 screen_width = screen_size[0]
 screen_height = screen_size[1]
 
+print(1111, screen_width/8)
+
 # score and life
 score = 0
 life = 10
 
 # create font
 font = pygame.font.Font(None, 36)
+menu_font = pygame.font.Font(None, 55)
 
 # recharge
 reloading = False
@@ -47,6 +50,7 @@ current_time = 0
 robot_group = pygame.sprite.Group()
 robot1_time = 105
 robot2_time = 125
+standard_robot_speed = screen_width/240
 
 # items
 
@@ -69,6 +73,18 @@ red_group = pygame.sprite.GroupSingle(red_line)
 
 # create bullet group
 bullet_group = pygame.sprite.Group()
+
+images = []
+for num in range(8):
+    img = pygame.image.load(f"img/robots2/robot_2.{num}.png")
+    img = pygame.transform.scale(img, (180, 140))
+    images.append(img)
+
+old_images = []
+for num in range(1, 5):
+    img = pygame.image.load(f'img/mob/mob{num}-removebg-preview.png')
+    img = pygame.transform.scale(img, (100, 100))
+    old_images.append(img)
 
 while run:
     if gameplay:
@@ -123,19 +139,12 @@ while run:
         screen.blit(life_text, (screen_width-200, 100))
         screen.blit(cage_count_text, (screen_width-200, 140))
 
-        # mob spawn
-        anim = [
-                pygame.image.load('img/mob/mob1-removebg-preview.png'),
-                pygame.image.load('img/mob/mob2-removebg-preview.png'),
-                pygame.image.load('img/mob/mob3-removebg-preview.png'),
-                pygame.image.load('img/mob/mob4-removebg-preview.png'),
-            ]
         if current_time >= robot1_time:
             robot_group.add(animatedItem(
-                    path='img/mob/mob1-removebg-preview.png',
+                    path='img/robots2/robot_2.0.png',
                     x=screen_width, y=randint(20, screen_height - 30),
                     width=100, height=100,
-                    speed=5, anim=anim
+                    speed=8, anim=images
                 ))
             robot1_time += 105
         if current_time >= robot2_time:
@@ -144,7 +153,7 @@ while run:
                     path='img/mob/mob1-removebg-preview.png',
                     x=screen_width, y=randint(20, screen_height - 30),
                     width=100, height=100,
-                    speed=5, anim=anim
+                    speed=8, anim=old_images
                 )
             )
             robot2_time += 125
@@ -175,11 +184,8 @@ while run:
             life -= 1
             screen.blit(life_text, (screen_width-200, 100))
             if life <= 0:
-                from datetime import datetime
                 if score != 0:
-                    now = datetime.now()
-                    key = f'{now.year}_{now.month}_{now.day}={now.hour}_{now.minute}_{now.second}'
-                    result = inJson('results.json').new_value(key, score)
+                    result = inJson('results.json').new_value(score)
                 gameplay = False
 
         robot_collide = pygame.sprite.groupcollide(bullet_group, robot_group, True, True)
@@ -190,22 +196,27 @@ while run:
         pygame.display.update()
         current_time += 1.25
     elif not gameplay and not pause:
-        lose_label = font.render('Вы проиграли!', False, (180, 0, 0))
-        score_label = font.render(f'Счет: {score}', False, (180, 0, 0))
-        lose_btn = font.render('Заново', False, (180, 0, 0))
-        lose_btn_rect = lose_btn.get_rect(topleft=(740, 400))
-        exit_btn = font.render('Выйти', False, (180, 0, 0))
-        exit_btn_rect = exit_btn.get_rect(topleft=(745, 460))
 
-        screen.fill((87, 88, 89))
+        text_color = (0, 0, 0)
+        text_width = screen_width/2-100
+        text_height = screen_height/3
 
-        screen.blit(lose_label, (700, 300))
-        screen.blit(score_label, (740, 350))
+        lose_label = menu_font.render('Вы проиграли!', False, text_color)
+        score_label = menu_font.render(f'Счет: {score}', False, text_color)
+        lose_btn = menu_font.render('Заново', False, text_color)
+        lose_btn_rect = lose_btn.get_rect(topleft=(text_width, text_height+120))
+        exit_btn = menu_font.render('Выйти', False, text_color)
+        exit_btn_rect = exit_btn.get_rect(topleft=(text_width, text_height+180))
 
-        pygame.draw.rect(screen, (50, 168, 70), (730, 390, 110, 45))
+        screen.fill((255, 55, 0))
+
+        screen.blit(lose_label, (text_width, text_height))
+        screen.blit(score_label, (text_width, text_height+60))
+
+        # pygame.draw.rect(screen, (50, 168, 70), (730, 390, 110, 45))
         screen.blit(lose_btn, lose_btn_rect)
 
-        pygame.draw.rect(screen, (50, 168, 70), (730, 450, 110, 45))
+        # pygame.draw.rect(screen, (50, 168, 70), (730, 450, 110, 45))
         screen.blit(exit_btn, exit_btn_rect)
 
         mouse = pygame.mouse.get_pos()
@@ -232,24 +243,28 @@ while run:
     if pause:
         gameplay = False
 
-        pause_label = font.render('Пауза', False, (180, 0, 0))
-        score_label = font.render(f'Счет: {score}', False, (180, 0, 0))
-        life_label = font.render(f'Жизней: {life}', False, (180, 0, 0))
-        continue_btn = font.render('Продолжить', False, (180, 0, 0))
-        continue_btn_rect = continue_btn.get_rect(topleft=(710, 430))
-        exit_btn = font.render('Выйти', False, (180, 0, 0))
-        exit_btn_rect = exit_btn.get_rect(topleft=(745, 490))
+        color_text = (255, 255, 255)
+        text_width = screen_width/2-100
+        text_height = screen_height/3
 
-        screen.fill((87, 88, 89))
+        pause_label = menu_font.render('Пауза', False, color_text)
+        score_label = menu_font.render(f'Счет: {score}', False, color_text)
+        life_label = menu_font.render(f'Жизней: {life}', False, color_text)
+        continue_btn = menu_font.render('Продолжить', False, color_text)
+        continue_btn_rect = continue_btn.get_rect(topleft=(text_width, text_height+180))
+        exit_btn = menu_font.render('Выйти', False, color_text)
+        exit_btn_rect = exit_btn.get_rect(topleft=(text_width, text_height+240))
 
-        screen.blit(pause_label, (740, 300))
-        screen.blit(score_label, (740, 350))
-        screen.blit(life_label, (710, 380))
+        screen.fill((0, 0, 0))
 
-        pygame.draw.rect(screen, (50, 168, 70), (700, 420, 170, 45))
+        screen.blit(pause_label, (text_width, text_height))
+        screen.blit(score_label, (text_width, text_height+60))
+        screen.blit(life_label, (text_width, text_height+120))
+
+        # pygame.draw.rect(screen, (50, 168, 70), (screen_width/2, screen_height/2+90, 170, 45))
         screen.blit(continue_btn, continue_btn_rect)
 
-        pygame.draw.rect(screen, (50, 168, 70), (730, 480, 110, 45))
+        # pygame.draw.rect(screen, (50, 168, 70), (screen_width/2, screen_height/2+120, 110, 45))
         screen.blit(exit_btn, exit_btn_rect)
 
         mouse = pygame.mouse.get_pos()
