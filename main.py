@@ -23,8 +23,6 @@ screen_size = pygame.display.get_window_size()
 screen_width = screen_size[0]
 screen_height = screen_size[1]
 
-print(1111, screen_width/8)
-
 # score and life
 score = 0
 life = 10
@@ -42,8 +40,9 @@ cd_time = 90
 
 # run the game
 run = True
-gameplay = True
+gameplay = False
 pause = False
+game_menu = True
 
 # robot group and timers
 current_time = 0
@@ -51,6 +50,11 @@ robot_group = pygame.sprite.Group()
 robot1_time = 105
 robot2_time = 125
 standard_robot_speed = screen_width/240
+wave_count = 0
+final_wave = 11
+spawned1 = 0
+spawned2 = 0
+level_boss_alive = True
 
 # items
 
@@ -88,6 +92,8 @@ for num in range(1, 5):
 
 while run:
     if gameplay:
+
+        # wave_count = 1
         key = pygame.key.get_pressed()
 
         # fps, bg-color, texts
@@ -96,6 +102,7 @@ while run:
         score_text = font.render(f'Score: {score}', True, (180, 0, 0))
         life_text = font.render(f'{life} lifes', True, (180, 0, 0))
         cage_count_text = font.render(f'{cage_count} bullets', True, (180, 0, 0))
+        data = font.render(f'1:{spawned1}, 2:{spawned2}, wave: {wave_count}, ct: {current_time}, rb1: {robot1_time}, rb2: {robot2_time}', True, (180, 0, 0))
 
         # get events
         for e in pygame.event.get():
@@ -138,25 +145,119 @@ while run:
         screen.blit(score_text, (screen_width-200, 60))
         screen.blit(life_text, (screen_width-200, 100))
         screen.blit(cage_count_text, (screen_width-200, 140))
+        screen.blit(data, (20, screen_height-25))
 
-        if current_time >= robot1_time:
+        if robot2_time <= 1250:
+            wave_count = 1
+        if robot2_time > 1250 and robot2_time <= 3000:
+            wave_count = 2
+        if 3000 < robot2_time and robot2_time <= 5000:
+            wave_count = 3
+        if 5000 < robot2_time and robot2_time <= 8000:
+            wave_count = 4
+        if 8000 < robot2_time and robot2_time <= 11000:
+            wave_count = 5
+        if 11000 <= robot2_time and robot2_time <= 13000:
+            wave_count = 6
+        if 13000 <= robot2_time and robot2_time <= 15000:
+            wave_count = 7
+        if 15000 <= robot2_time and robot2_time <= 16500:
+            wave_count = 8
+        if 16500 <= robot2_time and robot2_time <= 18000:
+            wave_count = 9
+        if 18000 <= robot2_time and robot2_time <= 19000:
+            wave_count = 10
+        if 19000 <= robot2_time and level_boss_alive:
+            wave_count = 11
+
+
+
+        if current_time >= robot1_time and 0 < wave_count < 4:
             robot_group.add(animatedItem(
                     path='img/robots2/robot_2.0.png',
                     x=screen_width, y=randint(20, screen_height - 30),
                     width=100, height=100,
-                    speed=8, anim=images
+                    speed=standard_robot_speed, anim=images
                 ))
+            spawned1 += 1
             robot1_time += 105
-        if current_time >= robot2_time:
+        if current_time >= robot2_time and 0 < wave_count < 4:
             robot_group.add(
                 animatedItem(
                     path='img/mob/mob1-removebg-preview.png',
                     x=screen_width, y=randint(20, screen_height - 30),
                     width=100, height=100,
-                    speed=8, anim=old_images
+                    speed=standard_robot_speed, anim=old_images
                 )
             )
+            spawned2 += 1
             robot2_time += 125
+            # 10 robot2 = 1250
+            # 3000 - 24rb2
+            # 40rb2 = 5000
+
+        if current_time >= robot1_time and 3 < wave_count < 8:
+            robot_group.add(animatedItem(
+                    path='img/robots2/robot_2.0.png',
+                    x=screen_width, y=randint(20, screen_height - 30),
+                    width=100, height=100,
+                    speed=standard_robot_speed, anim=images
+                ))
+            spawned1 += 1
+
+            robot1_time += 90
+        if current_time >= robot2_time and 3 < wave_count < 8:
+            robot_group.add(
+                animatedItem(
+                    path='img/mob/mob1-removebg-preview.png',
+                    x=screen_width, y=randint(20, screen_height - 30),
+                    width=100, height=100,
+                    speed=standard_robot_speed, anim=old_images
+                )
+            )
+            spawned2 += 1
+
+            robot2_time += 115
+
+
+        if current_time >= robot1_time and wave_count > 7:
+            robot_group.add(animatedItem(
+                path='img/robots2/robot_2.0.png',
+                x=screen_width, y=randint(20, screen_height - 30),
+                width=100, height=100,
+                speed=standard_robot_speed, anim=images
+            ))
+            spawned1 += 1
+
+            robot1_time += 80
+
+        if current_time >= robot2_time and wave_count > 7:
+            robot_group.add(
+                animatedItem(
+                    path='img/mob/mob1-removebg-preview.png',
+                    x=screen_width, y=randint(20, screen_height - 30),
+                    width=100, height=100,
+                    speed=standard_robot_speed, anim=old_images
+                )
+            )
+            spawned2 += 1
+
+            robot2_time += 105
+
+        if current_time >= robot1_time and wave_count == final_wave:
+            robot_group.add(animatedItem(
+                path='img/robots2/robot_2.0.png',
+                x=screen_width, y=randint(20, screen_height - 30),
+                width=100, height=100,
+                speed=standard_robot_speed, anim=images
+            ))
+            robot_group.add(animatedItem(
+                    path='img/mob/mob1-removebg-preview.png',
+                    x=screen_width, y=randint(20, screen_height - 30),
+                    width=100, height=100,
+                    speed=standard_robot_speed, anim=old_images
+                ))
+            robot1_time += 90
 
         # gun move
         gun.move(pygame.K_w, pygame.K_s)
@@ -186,7 +287,6 @@ while run:
             if life <= 0:
                 if score != 0:
                     result = inJson('results.json').new_value(score)
-                gameplay = False
 
         robot_collide = pygame.sprite.groupcollide(bullet_group, robot_group, True, True)
         if robot_collide:
@@ -195,7 +295,7 @@ while run:
         # update display and mob spawn timer
         pygame.display.update()
         current_time += 1.25
-    elif not gameplay and not pause:
+    elif not gameplay and not pause and not game_menu:
 
         text_color = (0, 0, 0)
         text_width = screen_width/2-100
@@ -285,6 +385,49 @@ while run:
                 gameplay = True
                 pause = False
         pygame.display.update()
+    if not gameplay and game_menu:
 
+        text_color = (121, 168, 50)
+        text_width = screen_width / 2 - 100
+        text_height = screen_height / 3
+
+        game_label = menu_font.render('UwU', False, text_color)
+        label = menu_font.render('Меню', False, text_color)
+        go_btn = menu_font.render('Начать', False, text_color)
+        go_btn_rect = go_btn.get_rect(topleft=(text_width, text_height + 120))
+        result_btn = menu_font.render('Результаты', False, text_color)
+        result_btn_rect = result_btn.get_rect(topleft=(text_width, text_height + 180))
+        exit_btn = menu_font.render('Выйти', False, text_color)
+        exit_btn_rect = exit_btn.get_rect(topleft=(text_width, text_height + 240))
+
+        screen.fill((0, 0, 0))
+
+
+        screen.blit(game_label, (text_width, text_height))
+        screen.blit(label, (text_width, text_height + 60))
+
+        screen.blit(go_btn, go_btn_rect)
+        screen.blit(result_btn, result_btn_rect)
+        screen.blit(exit_btn, exit_btn_rect)
+
+        for ev in pygame.event.get():
+            key = pygame.key.get_pressed()
+            if ev.type == pygame.QUIT:
+                run = False
+            if key[pygame.K_ESCAPE]:
+                run = False
+            if key[pygame.K_q]:
+                gameplay = True
+                game_menu = False
+
+        mouse = pygame.mouse.get_pos()
+        if pygame.mouse.get_pressed()[0]:
+            if go_btn_rect.collidepoint(mouse):
+                gameplay = True
+                game_menu = False
+            if exit_btn_rect.collidepoint(mouse):
+                run = False
+
+        pygame.display.update()
 
 pygame.quit()

@@ -13,7 +13,6 @@ class inJson:
             for i in file:
                 try:
                     index_now = i.split('t')
-                    print(index_now)
                     indexes.append(int(index_now[1]))
                 except IndexError:
                     indexes.append(int(index_now[0]))
@@ -64,8 +63,3 @@ class inJson:
             func(result)
 
         return inner
-
-
-
-
-
