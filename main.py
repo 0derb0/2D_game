@@ -1,6 +1,5 @@
 import pygame
-from random import randint
-from newItem import Item, movingItem, animatedItem, controlItem
+from newItem import Item, movingItem, controlItem
 from work_with_json import inJson
 from Robot_spawn import *
 import consts
@@ -8,8 +7,6 @@ import consts
 
 pygame.init()
 
-# create fps
-fps = 100
 clock = pygame.time.Clock()
 
 # creating a display
@@ -22,8 +19,6 @@ pygame.display.set_icon(icon)
 
 # screen size
 screen_size = pygame.display.get_window_size()
-screen_height = screen_size[0]
-screen_width = screen_size[1]
 
 # create font
 font = pygame.font.Font(None, 36)
@@ -95,9 +90,21 @@ while glob_data.run:
         # fps, bg-color, texts
         clock.tick(glob_data.fps)
         screen.fill((200, 162, 200))
-        score_text = font.render(f'Score: {glob_data.score}', True, (180, 0, 0))
-        life_text = font.render(f'{glob_data.life} lifes', True, (180, 0, 0))
-        cage_count_text = font.render(f'{gun_data.cage_count} bullets', True, (180, 0, 0))
+
+        text_color = (180, 0, 0)
+        text_width = glob_data.width - 200
+        text_height = 60
+
+        labels = (
+            f'Score: {glob_data.score}',
+            f'Wave: {rb_data.wave_count}',
+            f'{glob_data.life} lifes',
+            f'{gun_data.cage_count} bullets'
+        )
+        labels = consts.render_labels(
+            text_color, labels, font
+        )
+
         data = font.render(f'1:{rb_data.spawned1}, 2:{rb_data.spawned2}, wave: {rb_data.wave_count}, rb1: {rb_data.robot1_time}, rb2: {rb_data.robot2_time}, ct: {rb_data.current_time}', True, (180, 0, 0))
 
         # get events
@@ -130,17 +137,17 @@ while glob_data.run:
         if (key[pygame.K_r]) or gun_data.reloading:
             gun_data.reloading = True
             gun_data.cd_time -= 1
-            screen.blit(cage_count_text, (glob_data.width-200, 140))
+            screen.blit(labels[3], (glob_data.width-200, 140))
             if gun_data.cd_time <= 0:
                 gun_data.cage_count = gun_data.cage_count_const
                 gun_data.cd_time = gun_data.cd_time_const
-                screen.blit(cage_count_text, (glob_data.width-200, 140))
+                screen.blit(labels[3], (glob_data.width-200, 140))
                 gun_data.reloading = False
 
-        # write a texts
-        screen.blit(score_text, (glob_data.width-200, 60))
-        screen.blit(life_text, (glob_data.width-200, 100))
-        screen.blit(cage_count_text, (glob_data.width-200, 140))
+        space = 0
+        for label in labels:
+            screen.blit(label, (text_width, text_height + space))
+            space += 40
         screen.blit(data, (20, glob_data.height-25))
 
         rb_data.wave_count = Wave_count(
@@ -197,7 +204,7 @@ while glob_data.run:
         red_collide = pygame.sprite.groupcollide(red_group, robot_group, False, True)
         if red_collide:
             glob_data.life -= 1
-            screen.blit(life_text, (glob_data.width-200, 100))
+            screen.blit(labels[2], (glob_data.width-200, 100))
             if glob_data.life <= 0:
                 if glob_data.score != 0:
                     result = inJson('results.json').new_value(glob_data.score)
@@ -217,27 +224,31 @@ while glob_data.run:
         text_width = glob_data.width/2-100
         text_height = glob_data.height/3
 
-        lose_label = menu_font.render('Вы проиграли!', False, text_color)
-        score_label = menu_font.render(f'Счет: {glob_data.score}', False, text_color)
-        lose_btn = menu_font.render('Заново', False, text_color)
-        lose_btn_rect = lose_btn.get_rect(topleft=(text_width, text_height+120))
-        exit_btn = menu_font.render('Выйти', False, text_color)
-        exit_btn_rect = exit_btn.get_rect(topleft=(text_width, text_height+180))
-
         screen.fill((255, 55, 0))
 
-        screen.blit(lose_label, (text_width, text_height))
-        screen.blit(score_label, (text_width, text_height+60))
+        space = 0
 
-        # pygame.draw.rect(screen, (50, 168, 70), (730, 390, 110, 45))
-        screen.blit(lose_btn, lose_btn_rect)
+        labels = (
+            'Вы проиграли!',
+            f'Score: {glob_data.score}',
+            f'Wave: {rb_data.wave_count}'
+        )
+        labels = consts.render_labels(text_color, labels, menu_font)
+        for label in labels:
+            screen.blit(label, (text_width, text_height + space))
+            space += 60
 
-        # pygame.draw.rect(screen, (50, 168, 70), (730, 450, 110, 45))
-        screen.blit(exit_btn, exit_btn_rect)
+        buttons = ('Заново', 'Выйти')
+        buttons = consts.render_buttons(
+            text_color, buttons, menu_font,
+            text_width, text_height, space, 60
+        )
+        for btn in buttons:
+            screen.blit(btn[0], btn[1])
 
         mouse = pygame.mouse.get_pos()
         if pygame.mouse.get_pressed()[0]:
-            if lose_btn_rect.collidepoint(mouse):
+            if buttons[0][1].collidepoint(mouse):
                 glob_data.gameplay = True
                 robot_group.empty()
                 bullet_group.empty()
@@ -245,7 +256,7 @@ while glob_data.run:
                 glob_data.life = 10
                 gun_data.cage_count = gun_data.cage_count_const
                 glob_data.score = 0
-            if exit_btn_rect.collidepoint(mouse):
+            if buttons[1][1].collidepoint(mouse):
                 glob_data.run = False
 
         for e in pygame.event.get():
@@ -262,32 +273,38 @@ while glob_data.run:
         text_width = glob_data.width/2-100
         text_height = glob_data.height/3
 
-        pause_label = menu_font.render('Пауза', False, color_text)
-        score_label = menu_font.render(f'Счет: {glob_data.score}', False, color_text)
-        life_label = menu_font.render(f'Жизней: {glob_data.life}', False, color_text)
-        continue_btn = menu_font.render('Продолжить', False, color_text)
-        continue_btn_rect = continue_btn.get_rect(topleft=(text_width, text_height+180))
-        exit_btn = menu_font.render('Выйти', False, color_text)
-        exit_btn_rect = exit_btn.get_rect(topleft=(text_width, text_height+240))
-
         screen.fill((0, 0, 0))
 
-        screen.blit(pause_label, (text_width, text_height))
-        screen.blit(score_label, (text_width, text_height+60))
-        screen.blit(life_label, (text_width, text_height+120))
+        space = 0
 
-        # pygame.draw.rect(screen, (50, 168, 70), (screen_width/2, screen_height/2+90, 170, 45))
-        screen.blit(continue_btn, continue_btn_rect)
-
-        # pygame.draw.rect(screen, (50, 168, 70), (screen_width/2, screen_height/2+120, 110, 45))
-        screen.blit(exit_btn, exit_btn_rect)
+        labels = (
+            'Пауза',
+            f'Счет: {glob_data.score}',
+            f'Жизней: {glob_data.life}'
+        )
+        labels = consts.render_labels(
+            color_text, labels, menu_font
+        )
+        for label in labels:
+            screen.blit(label, (text_width, text_height + space))
+            space += 60
+        buttons = (
+            'Продолжить',
+            'Выйти'
+        )
+        buttons = consts.render_buttons(
+            color_text, buttons, menu_font, text_width,
+            text_height, space, 60
+        )
+        for btn in buttons:
+            screen.blit(btn[0], btn[1])
 
         mouse = pygame.mouse.get_pos()
         if pygame.mouse.get_pressed()[0]:
-            if continue_btn_rect.collidepoint(mouse):
+            if buttons[0][1].collidepoint(mouse):
                 glob_data.gameplay = True
                 glob_data.pause = False
-            if exit_btn_rect.collidepoint(mouse):
+            if buttons[1][1].collidepoint(mouse):
                 glob_data.run = False
 
         for e in pygame.event.get():
@@ -306,24 +323,23 @@ while glob_data.run:
         text_width = glob_data.width / 2 - 100
         text_height = glob_data.height / 3
 
-        game_label = menu_font.render('UwU', False, text_color)
-        label = menu_font.render('Меню', False, text_color)
-        go_btn = menu_font.render('Начать', False, text_color)
-        go_btn_rect = go_btn.get_rect(topleft=(text_width, text_height + 120))
-        result_btn = menu_font.render('Результаты', False, text_color)
-        result_btn_rect = result_btn.get_rect(topleft=(text_width, text_height + 180))
-        exit_btn = menu_font.render('Выйти', False, text_color)
-        exit_btn_rect = exit_btn.get_rect(topleft=(text_width, text_height + 240))
-
         screen.fill((0, 0, 0))
 
+        space = 0
 
-        screen.blit(game_label, (text_width, text_height))
-        screen.blit(label, (text_width, text_height + 60))
+        labels = ('UwU', 'Меню')
+        labels = consts.render_labels(text_color, labels, menu_font)
+        for label in labels:
+            screen.blit(label, (text_width, text_height + space))
+            space += 60
 
-        screen.blit(go_btn, go_btn_rect)
-        screen.blit(result_btn, result_btn_rect)
-        screen.blit(exit_btn, exit_btn_rect)
+        buttons = ('Играть', 'Результаты', 'Выйти')
+        buttons = consts.render_buttons(
+            text_color, buttons, menu_font,
+            text_width, text_height, space, 60
+        )
+        for btn in buttons:
+            screen.blit(btn[0], btn[1])
 
         for ev in pygame.event.get():
             key = pygame.key.get_pressed()
@@ -337,10 +353,10 @@ while glob_data.run:
 
         mouse = pygame.mouse.get_pos()
         if pygame.mouse.get_pressed()[0]:
-            if go_btn_rect.collidepoint(mouse):
+            if buttons[0][1].collidepoint(mouse):
                 glob_data.gameplay = True
                 glob_data.game_menu = False
-            if exit_btn_rect.collidepoint(mouse):
+            if buttons[2][1].collidepoint(mouse):
                 glob_data.run = False
 
         pygame.display.update()

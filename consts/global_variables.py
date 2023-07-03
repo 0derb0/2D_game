@@ -21,7 +21,7 @@ class Robot_data:
     current_time: float
     robot1_time: int
     robot2_time: int
-    standard_robot_speed: int
+    standard_robot_speed: float
     wave_count: int
     final_wave: int
     spawned1: int
