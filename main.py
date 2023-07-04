@@ -23,6 +23,7 @@ screen_size = pygame.display.get_window_size()
 # create font
 font = pygame.font.Font(None, 36)
 menu_font = pygame.font.Font(None, 55)
+wave_font = pygame.font.Font(None, 100)
 
 gun_data = consts.Gun_data(
     reloading=False, cage_count_const=30, cage_count=30,
@@ -32,7 +33,7 @@ gun_data = consts.Gun_data(
 glob_data = consts.Global_data(
     height=screen_size[1], width=screen_size[0], fps=100,
     run=True, gameplay=False, pause=False, game_menu=True,
-    score=0, life=10
+    wave_label=False, label_timer=0, score=0, life=10
 )
 
 # robot group and timers
@@ -84,7 +85,6 @@ for num in range(1, 5):
 while glob_data.run:
     if glob_data.gameplay:
 
-        # wave_count = 1
         key = pygame.key.get_pressed()
 
         # fps, bg-color, texts
@@ -137,7 +137,7 @@ while glob_data.run:
         if (key[pygame.K_r]) or gun_data.reloading:
             gun_data.reloading = True
             gun_data.cd_time -= 1
-            screen.blit(labels[3], (glob_data.width-200, 140))
+            screen.blit(labels[3], (glob_data.width-200, 180))
             if gun_data.cd_time <= 0:
                 gun_data.cage_count = gun_data.cage_count_const
                 gun_data.cd_time = gun_data.cd_time_const
@@ -150,9 +150,13 @@ while glob_data.run:
             space += 40
         screen.blit(data, (20, glob_data.height-25))
 
-        rb_data.wave_count = Wave_count(
-            rb_time=rb_data.robot2_time, lba=rb_data.level_boss_alive
-        )
+        last_wave = rb_data.wave_count
+        new_wave = Wave_count(rb_data.robot2_time, rb_data.level_boss_alive)
+        if new_wave != last_wave:
+            print(f'->{new_wave == last_wave}<->{new_wave}<->{last_wave}<-')
+            glob_data.gameplay = False
+            glob_data.wave_label = True
+            rb_data.wave_count = new_wave
 
         if rb_data.current_time >= rb_data.robot1_time:
             robot_group.add(new_robot(
@@ -207,7 +211,7 @@ while glob_data.run:
             screen.blit(labels[2], (glob_data.width-200, 100))
             if glob_data.life <= 0:
                 if glob_data.score != 0:
-                    result = inJson('results.json').new_value(glob_data.score)
+                    result = inJson('results.json').new_value(glob_data.score, rb_data.wave_count)
                 glob_data.gameplay = False
 
         robot_collide = pygame.sprite.groupcollide(bullet_group, robot_group, True, True)
@@ -217,6 +221,28 @@ while glob_data.run:
         # update display and mob spawn timer
         pygame.display.update()
         rb_data.current_time += 1.25
+    elif not glob_data.gameplay and glob_data.wave_label:
+        from time import sleep
+
+
+
+        if glob_data.label_timer <= 300:
+            text_color = (180, 0, 0)
+            labels = (f'Wave: {rb_data.wave_count}', )
+            labels = consts.render_labels(text_color, labels, wave_font)
+            height = glob_data.height / 2
+            width = glob_data.width / 2 - 100
+            for label in labels:
+                screen.blit(label, (width, height))
+            glob_data.label_timer += 1
+            pygame.display.update()
+        else:
+            glob_data.label_timer = 0
+            glob_data.gameplay = True
+            glob_data.wave_label = False
+
+
+
     elif not glob_data.gameplay and not glob_data.pause \
             and not glob_data.game_menu:
 
@@ -256,6 +282,9 @@ while glob_data.run:
                 glob_data.life = 10
                 gun_data.cage_count = gun_data.cage_count_const
                 glob_data.score = 0
+                rb_data.wave_count = 0
+                rb_data.current_time = 0
+                rb_data.robot1_time, rb_data.robot2_time = 0, 0
             if buttons[1][1].collidepoint(mouse):
                 glob_data.run = False
 
@@ -266,7 +295,7 @@ while glob_data.run:
             if key[pygame.K_ESCAPE]:
                 glob_data.run = False
         pygame.display.update()
-    if glob_data.pause:
+    elif glob_data.pause:
         glob_data.gameplay = False
 
         color_text = (255, 255, 255)
@@ -317,7 +346,7 @@ while glob_data.run:
                 glob_data.gameplay = True
                 glob_data.pause = False
         pygame.display.update()
-    if not glob_data.gameplay and glob_data.game_menu:
+    elif not glob_data.gameplay and glob_data.game_menu:
 
         text_color = (121, 168, 50)
         text_width = glob_data.width / 2 - 100

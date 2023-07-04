@@ -6,7 +6,7 @@ class inJson:
     def __init__(self, file):
         self.file = file
 
-    def new_value(self, value):
+    def new_value(self, score, wave):
         with open(self.file) as f:
             file = json.load(f)
             indexes = []
@@ -26,7 +26,8 @@ class inJson:
             file.update(
                 {name: {
                     'date': f'{datetime.now()}',
-                    'result': value
+                    'result': score,
+                    'wave': wave
                 }}
             )
         with open(self.file, 'w') as f:
@@ -57,9 +58,13 @@ class inJson:
                 return self
 
         def inner(func):
+            result = {}
             with open(self.file) as f:
                 file = json.load(f)
-            result = Dict(file)
+            for key, value in file.items():
+                result[key] = Dict(value)
+            result = Dict(result)
             func(result)
 
         return inner
+

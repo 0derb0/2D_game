@@ -6,11 +6,13 @@ class Global_data:
     height: int
     width: int
     fps: int
+    label_timer: int
 
     run: bool
     gameplay: bool
     pause: bool
     game_menu: bool
+    wave_label: bool
 
     score: int
     life: int
