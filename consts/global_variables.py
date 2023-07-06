@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import pygame.image
+
 
 @dataclass
 class Global_data:
@@ -29,6 +31,7 @@ class Robot_data:
     spawned1: int
     spawned2: int
     level_boss_alive: bool
+    img_now: str
 
 
 @dataclass
@@ -37,4 +40,4 @@ class Gun_data:
     cage_count_const: int
     cage_count: int
     cd_time_const: int
-    cd_time:int
+    cd_time: int

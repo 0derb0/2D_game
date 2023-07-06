@@ -36,6 +36,9 @@ glob_data = consts.Global_data(
     wave_label=False, label_timer=0, score=0, life=10
 )
 
+bg_img = pygame.image.load('img/bg_img.jpg')
+bg_img = pygame.transform.scale(bg_img, (glob_data.width, glob_data.height))
+
 # robot group and timers
 
 robot_group = pygame.sprite.Group()
@@ -44,7 +47,7 @@ rb_data = consts.Robot_data(
     current_time=0, robot1_time=105, robot2_time=125,
     standard_robot_speed=glob_data.width / 240,
     wave_count=0, final_wave=11, spawned1=0, spawned2=0,
-    level_boss_alive=True
+    level_boss_alive=True, img_now='img/robots3/photo0_0.png'
 )
 
 # items
@@ -54,7 +57,7 @@ gun = controlItem(
     pash='img/gun1.png',
     x=100, y=glob_data.height/2,
     width=200, height=200,
-    flip=True, velocity=8
+    flip=True, velocity=glob_data.height / 100
 )
 gun_group = pygame.sprite.GroupSingle(gun)
 
@@ -80,6 +83,9 @@ for num in range(1, 5):
     img = pygame.image.load(f'img/mob/mob{num}-removebg-preview.png')
     img = pygame.transform.scale(img, (100, 100))
     old_images.append(img)
+
+photos = (f'img/robots3/photo{x}_0.png' for x in range(1, 6))
+
 
 
 while glob_data.run:
@@ -148,41 +154,64 @@ while glob_data.run:
         for label in labels:
             screen.blit(label, (text_width, text_height + space))
             space += 40
-        screen.blit(data, (20, glob_data.height-25))
+        #screen.blit(data, (20, glob_data.height-25))
 
         last_wave = rb_data.wave_count
         new_wave = Wave_count(rb_data.robot2_time, rb_data.level_boss_alive)
         if new_wave != last_wave:
             print(f'->{new_wave == last_wave}<->{new_wave}<->{last_wave}<-')
-            glob_data.gameplay = False
+            if new_wave == 3 or new_wave == 5 or new_wave == 7 or new_wave == 9 or new_wave == 11:
+                rb_data.img_now = next(photos)
+
+            # glob_data.gameplay = False
             glob_data.wave_label = True
             rb_data.wave_count = new_wave
 
         if rb_data.current_time >= rb_data.robot1_time:
             robot_group.add(new_robot(
+                rb_data.img_now,
                 glob_data.width, glob_data.height,
-                rb_data.standard_robot_speed, images
+                rb_data.standard_robot_speed
             ))
             rb_data.robot1_time += rb_time(rb_data.wave_count, 'rb1')
 
         if rb_data.current_time >= rb_data.robot2_time:
             robot_group.add(new_robot(
+                rb_data.img_now,
                 glob_data.width, glob_data.height,
-                rb_data.standard_robot_speed, old_images
+                rb_data.standard_robot_speed
             ))
             rb_data.robot2_time += rb_time(rb_data.wave_count, 'rb2')
 
         if rb_data.current_time >= rb_data.robot1_time \
                 and rb_data.wave_count == rb_data.final_wave:
             robot_group.add(new_robot(
+                rb_data.img_now,
                 glob_data.width, glob_data.height,
-                rb_data.standard_robot_speed, images
+                rb_data.standard_robot_speed
             ))
             robot_group.add(new_robot(
+                rb_data.img_now,
                 glob_data.width, glob_data.height,
-                rb_data.standard_robot_speed, old_images
+                rb_data.standard_robot_speed
             ))
             rb_data.robot1_time += 90
+
+        if glob_data.label_timer <= 200 and glob_data.wave_label:
+            text_color = (180, 0, 0)
+            labels = (f'Wave: {rb_data.wave_count}',)
+            labels = consts.render_labels(text_color, labels, wave_font)
+            height = glob_data.height / 2
+            width = glob_data.width / 2 - 100
+            for label in labels:
+                screen.blit(label, (width, height))
+            gun_data.cage_count = gun_data.cage_count_const
+            bullet_group.empty()
+            robot_group.empty()
+            glob_data.label_timer += 1
+        elif glob_data.label_timer >= 300:
+            glob_data.label_timer = 0
+            glob_data.wave_label = False
 
         # gun move
         gun.move(pygame.K_w, pygame.K_s)
@@ -226,20 +255,7 @@ while glob_data.run:
 
 
 
-        if glob_data.label_timer <= 300:
-            text_color = (180, 0, 0)
-            labels = (f'Wave: {rb_data.wave_count}', )
-            labels = consts.render_labels(text_color, labels, wave_font)
-            height = glob_data.height / 2
-            width = glob_data.width / 2 - 100
-            for label in labels:
-                screen.blit(label, (width, height))
-            glob_data.label_timer += 1
-            pygame.display.update()
-        else:
-            glob_data.label_timer = 0
-            glob_data.gameplay = True
-            glob_data.wave_label = False
+
 
 
 
@@ -348,15 +364,16 @@ while glob_data.run:
         pygame.display.update()
     elif not glob_data.gameplay and glob_data.game_menu:
 
-        text_color = (121, 168, 50)
+        text_color = (235, 201, 52)
         text_width = glob_data.width / 2 - 100
         text_height = glob_data.height / 3
 
-        screen.fill((0, 0, 0))
+        # screen.fill((0, 0, 0))
+        screen.blit(bg_img, (0, 0))
 
         space = 0
 
-        labels = ('UwU', 'Меню')
+        labels = ('SetLine', 'Меню')
         labels = consts.render_labels(text_color, labels, menu_font)
         for label in labels:
             screen.blit(label, (text_width, text_height + space))

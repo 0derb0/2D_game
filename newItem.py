@@ -24,6 +24,11 @@ class movingItem(Item):
         self.rect.x += self.speed
 
 
+class movingLeftItem(movingItem):
+    def update(self):
+        self.rect.x -= self.speed
+
+
 class animatedItem(movingItem):
     def __init__(self, path, x, y, height, width, speed, anim):
         movingItem.__init__(self, path, x, y, height, width, speed)

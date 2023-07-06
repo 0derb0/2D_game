@@ -1,13 +1,22 @@
-from newItem import animatedItem
+from newItem import animatedItem, movingLeftItem
 from random import randint
 
 
-def new_robot(sc_width, sc_height, speed, images):
+def new_anim_robot(sc_width, sc_height, speed, images):
     return animatedItem(
         path='img/robots2/robot_2.0.png',
         x=sc_width, y=randint(20, sc_height - 30),
         width=100, height=100,
         speed=speed, anim=images
+    )
+
+
+def new_robot(path, sc_width, sc_height, speed):
+    return movingLeftItem(
+        path=path,
+        x=sc_width, y=randint(20, sc_height - 30),
+        width=150, height=150,
+        speed=speed
     )
 
 
